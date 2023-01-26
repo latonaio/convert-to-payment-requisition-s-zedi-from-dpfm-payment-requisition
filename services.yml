@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    run: convert-to-payment-requisition-s-zedi-from-dpfm-payment-requisition
+  name: convert-to-payment-requisition-s-zedi-from-dpfm-payment-requisition
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: convert-to-payment-requisition-s-zedi-from-dpfm-payment-requisition
+      app: PAYMENT_REQUISITION
+  template:
+    metadata:
+      labels:
+        run: convert-to-payment-requisition-s-zedi-from-dpfm-payment-requisition
+        app: PAYMENT_REQUISITION
+    spec:
+      hostname: convert-to-payment-requisition-s-zedi-from-dpfm-payment-requisition
+      containers:
+        - name: convert-to-payment-requisition-s-zedi-from-dpfm-payment-requisition
+          image: latonaio/convert-to-payment-requisition-s-zedi-from-dpfm-payment-requisition
+          imagePullPolicy: Always
+          env:
+            - name: "RMQ_QUEUE_FROM"
+              value: "convert-to-payment-requisition-s-zedi-from-dpfm-payment-requisition-queue"
+            - name: "RMQ_QUEUE_TO"
+              value: "convert-to-payment-requisition-s-zedi-from-dpfm-payment-requisition-queue"
+            - name: "RMQ_SESSION_CONTROL_QUEUE"
+              value: "data-platform-api-orders-creates-session-control-queue"
+            - name: "DB_NAME"
+              value: "DataPlatformMastersAndTransactionsMysqlKube"
+          envFrom:
+            - configMapRef:
+                name: env-config
+            - secretRef:
+                name: env-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    run: convert-to-payment-requisition-s-zedi-from-dpfm-payment-requisition
+  name: convert-to-payment-requisition-s-zedi-from-dpfm-payment-requisition
+spec:
+  selector:
+    run: convert-to-payment-requisition-s-zedi-from-dpfm-payment-requisition
+  type: NodePort
+  ports:
+    - name: api
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+      nodePort: 30748
